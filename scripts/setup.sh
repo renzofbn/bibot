@@ -2,7 +2,7 @@
 
 cd /home
 
-git clone https://github.com/renzofbn/wts_api.git
+git clone https://github.com/renzofbn/bibot.git
 # Instalando Docker
 
 echo -e "\e[34mRemoviendo versiones anteriores de Docker...\e[0m"

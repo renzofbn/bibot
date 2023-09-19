@@ -3,3 +3,5 @@ node_modules/
 sessions/
 .wwebjs_cache/
 .wwebjs_auth/
+combined.log
+error.log

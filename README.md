@@ -9,5 +9,8 @@
 </p>
 
 
-
 Created by [**@renzofbn**](https://github.com/renzofbn)
+
+
+npm run dev
+npm run start

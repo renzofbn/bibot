@@ -2,6 +2,8 @@ import fetch from 'node-fetch';
 import { Configuration, OpenAIApi } from "openai";
 import { readdir } from "fs/promises";
 import Whatsapp from 'whatsapp-web.js';
+import { logger } from '../index.js';
+
 const { Client, LocalAuth } = Whatsapp
 
 
@@ -16,18 +18,18 @@ export class WhatsappSessionManager {
   }
 
   createNewSession (sessionId, url, gptData) {
-    console.log(`⚠️ -- Creando la sesión ${sessionId}`);
+    logger.info(`🔨 -- Creando la sesión ${sessionId}`);
     this.sessionIdVsClientInstance[sessionId] = new WhatsAppClientSession(sessionId, url, gptData);
   }
 
   async restartSession(sessionId) {
     if(!(sessionId in this.sessionIdVsClientInstance)) return;
-    console.log(`⚠️ -- Reiniciando la sesión ${sessionId}`);
+    logger.warn(`⚠️ -- Reiniciando la sesión ${sessionId}`);
     const instance = this.sessionIdVsClientInstance[sessionId];
     try {
       await instance.client.destroy();
     } catch (error) {
-      console.log(error);
+      logger.error(error);
     }
     this.sessionIdVsClientInstance[sessionId] = new WhatsAppClientSession(
       sessionId, instance.sheetUrl, {apiKey: instance.apiKey, training: instance.training});
@@ -35,7 +37,7 @@ export class WhatsappSessionManager {
 
   async destroySession(sessionId, logout=false) {
     if(!(sessionId in this.sessionIdVsClientInstance)) return;
-    console.log(`⚠️ --  Destruyendo la sesión ${sessionId}`);
+    logger.warn(`💥 --  Destruyendo la sesión ${sessionId}`);
     const instance = this.sessionIdVsClientInstance[sessionId];
     try {
       if(logout){
@@ -44,23 +46,23 @@ export class WhatsappSessionManager {
       }
       await instance.client.destroy();
     } catch (error) {
-      console.log(error);
+      logger.error(error);
     }
-    console.log(`✅ -- La sesión ${sessionId} ha sido destruida`);
+    logger.info(`✅ -- La sesión ${sessionId} ha sido destruida`);
   }
 
   async startSession(sessionId) {
     if(!(sessionId in this.sessionIdVsClientInstance)) return;
-    console.log(`⚠️  -- Iniciando la sesión ${sessionId}`);
+    logger.info(`⚠️  -- Iniciando la sesión ${sessionId}`);
     const instance = this.sessionIdVsClientInstance[sessionId];
     const status = await instance.client.getState();
     if (status === 'CONNECTED') {
-      console.log(`⚠️  -- La sesión ${sessionId} ya está iniciada`);
+      logger.info(`📣  -- La sesión ${sessionId} ya ESTÁ INICIADA`);
       return;
     }
-    console.log(`⚠️  -- Estado de la sesión ${sessionId}: ${status}`);
+    logger.info(`🔍  -- Estado de la sesión ${sessionId}: ${status}`);
     await instance.client.initialize();
-    console.log(`✅ -- La sesión ${sessionId} ha sido iniciada`);
+    logger.info(`✅ -- La sesión ${sessionId} ha sido iniciada`);
   }
 
   async getALLSessionsIDs() {
@@ -98,35 +100,34 @@ class WhatsAppClientSession {
       })
     });
     this.client.on('qr', (qr) => {
-      console.log(`⚠️ -- Esperando el escaneo del QR de ${this.sessionId} --`);
+      logger.info(`💤 -- Esperando el escaneo del QR de ${this.sessionId} --`);
       sendDataToSheet(this.sheetUrl, 'set_qr', {qr: qr});
     });
     this.client.on('ready', () => {
-      console.log(`✅ -- El cliente n° ${this.sessionId} está listo`);
+      logger.info(`✅ -- El cliente n° ${this.sessionId} está listo`);
       sendDataToSheet(this.sheetUrl, 'session_ready', {});
     });
     this.client.on('message', async msg => {
       try {
-        console.log(msg.body);
         if(msg.type !== 'chat' || typeof msg.author !== 'undefined') return;
         this.setMsgHistory(msg.from, {"role": "user", "content": msg.body});
         const msg_history = this.getMsgHistory(msg.from);
-        const chatCompletion = await this.gpt.createChatCompletion({
-          model: "gpt-3.5-turbo",
-          messages: msg_history
-        });
-        const response = chatCompletion.data.choices[0].message;
-
+        // const chatCompletion = await this.gpt.createChatCompletion({
+        //   model: "gpt-3.5-turbo",
+        //   messages: msg_history
+        // });
+        // const response = chatCompletion.data.choices[0].message;
+        const response = 'Hola, soy un bot de prueba'
         this.setMsgHistory(msg.from, response);
-        msg.reply(response.content);
+        // msg.reply(response.content);
         sendDataToSheet(this.sheetUrl, 'set_new_msg', {
         user_num: msg.from, msg: msg.body, response: response.content, date: msg.timestamp});
       } catch (error) {
         if (error.response) {
-          console.log(error.response.status);
-          console.log(error.response.data);
+          logger.error(error.response.status);
+          logger.error(error.response.data);
         } else {
-          console.log(error.message);
+          logger.error(error.message);
         }
       }
     });
@@ -184,5 +185,5 @@ class WhatsAppClientSession {
 const sendDataToSheet = async (url, op, data) => {
   const response = await fetch(url, {method: 'POST', body: JSON.stringify({op, data})});
   const txt_response = await response.text();
-  console.log(`🔍 -- La operacion ${op} ha retornado: ${txt_response}`);
+  logger.info(`🔍 -- La operacion ${op} ha retornado: ${txt_response}`);
 }
