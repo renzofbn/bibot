@@ -101,6 +101,7 @@ class WhatsAppClientSession {
     });
     this.client.on('qr', (qr) => {
       logger.info(`💤 -- Esperando el escaneo del QR de ${this.sessionId} --`);
+      // console.log(`https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=${encodeURIComponent(qr)}`);
       sendDataToSheet(this.sheetUrl, 'set_qr', {qr: qr});
     });
     this.client.on('ready', () => {
@@ -112,14 +113,13 @@ class WhatsAppClientSession {
         if(msg.type !== 'chat' || typeof msg.author !== 'undefined') return;
         this.setMsgHistory(msg.from, {"role": "user", "content": msg.body});
         const msg_history = this.getMsgHistory(msg.from);
-        // const chatCompletion = await this.gpt.createChatCompletion({
-        //   model: "gpt-3.5-turbo",
-        //   messages: msg_history
-        // });
-        // const response = chatCompletion.data.choices[0].message;
-        const response = 'Hola, soy un bot de prueba'
+        const chatCompletion = await this.gpt.createChatCompletion({
+          model: "gpt-3.5-turbo",
+          messages: msg_history
+        });
+        const response = chatCompletion.data.choices[0].message;
         this.setMsgHistory(msg.from, response);
-        // msg.reply(response.content);
+        msg.reply(response.content);
         sendDataToSheet(this.sheetUrl, 'set_new_msg', {
         user_num: msg.from, msg: msg.body, response: response.content, date: msg.timestamp});
       } catch (error) {

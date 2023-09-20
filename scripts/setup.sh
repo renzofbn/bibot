@@ -60,8 +60,8 @@ else
 fi
 
 # Modificando CRONTAB
-echo -e "\e[34mConfigurando para ejecutar wts_api despues de un reboot\e[0m"
-(crontab -l 2>/dev/null; echo "@reboot cd /home/wts_api && docker compose up -d") | crontab -
+echo -e "\e[34mConfigurando para ejecutar bibot despues de un reboot\e[0m"
+(crontab -l 2>/dev/null; echo "@reboot cd /home/bibot && docker compose up -d") | crontab -
 
 
 echo -e "\e[33mReinicia el sistema con el comando 'sudo reboot' para aplicar los cambios.\e[0m"
