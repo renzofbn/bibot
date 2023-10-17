@@ -22,5 +22,5 @@ export const logger = winston.createLogger({
 
 app.listen(PORT)
 
-logger.info('✅ Server running at ' + new Date().toLocaleString());
+logger.info('Server running at ' + new Date().toLocaleString());
 logger.info(`Server running on port ${PORT}`);

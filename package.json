@@ -16,7 +16,7 @@
     "express": "^4.18.2",
     "node-fetch": "^3.3.2",
     "openai": "^3.3.0",
-    "whatsapp-web.js": "^1.22.1",
+    "whatsapp-web.js": "^1.22.2-alpha.3",
     "winston": "^3.10.0"
   },
   "devDependencies": {

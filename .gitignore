@@ -1,7 +1,4 @@
+data/
+logs/
 node_modules/
-.env
-sessions/
-.wwebjs_cache/
-.wwebjs_auth/
-combined.log
-error.log
+scripts/
