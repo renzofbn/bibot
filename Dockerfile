@@ -6,6 +6,6 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --ignore-scripts puppeteer
 COPY . .
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]

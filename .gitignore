@@ -4,3 +4,4 @@ sessions/
 .wwebjs_cache/
 .wwebjs_auth/
 logs/
+data/

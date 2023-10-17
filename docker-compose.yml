@@ -10,3 +10,10 @@ services:
     environment:
       PORT: 3000
       ADMIN_PASS: 12345689
+      NODE_ENV: development
+  mongo_db:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./data:/data/db

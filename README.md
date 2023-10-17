@@ -14,3 +14,5 @@ Created by [**@renzofbn**](https://github.com/renzofbn)
 
 npm run dev
 npm run start
+
+const INTRO_IMG_SELECTOR = 'div[role=\'textbox\']'; //'[data-icon=\'chat\']';

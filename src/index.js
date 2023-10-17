@@ -1,6 +1,5 @@
 import app from './app.js';
-import { PORT } from './config.js';
-import { WhatsappSessionManager } from './msg_controllers/client_controller.js';
+import { WhatsappSessionManager } from './bot_controllers/bot_status.js';
 import winston from 'winston';
 
 export const wtsSessionManager = new WhatsappSessionManager();
@@ -16,6 +15,10 @@ export const logger = winston.createLogger({
   ],
 });
 
-app.listen(PORT)
-logger.info('✅ Server running at ' + new Date().toLocaleString());
-logger.info(`Server running on port ${PORT}`);
+if(process.env.NODE_ENV === 'development') {
+  logger.warn('Development mode');
+}
+
+app.listen(process.env.PORT)
+logger.info('Server running at ' + new Date().toLocaleString());
+logger.info(`Server running on port ${process.env.PORT}`);
