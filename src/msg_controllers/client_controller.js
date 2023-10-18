@@ -1,16 +1,9 @@
 import fetch from 'node-fetch';
 import { Configuration, OpenAIApi } from "openai";
-import { readdir } from "fs/promises";
-import Whatsapp from 'whatsapp-web.js';
-import { logger } from '../index.js';
 
-const { Client, LocalAuth } = Whatsapp
+import WhatsApp from 'whatsapp-web.js';
+const { Client, LocalAuth } = WhatsApp;
 
-
-const getDirectories = async source =>
-  (await readdir(source, { withFileTypes: true }))
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name);
 export class WhatsappSessionManager {
   constructor() {
     this.sessionIdVsClientInstance = {};
@@ -18,18 +11,18 @@ export class WhatsappSessionManager {
   }
 
   createNewSession (sessionId, url, gptData) {
-    logger.info(`🔨 -- Creando la sesión ${sessionId}`);
+    console.log(`🔨 -- Creando la sesión ${sessionId}`);
     this.sessionIdVsClientInstance[sessionId] = new WhatsAppClientSession(sessionId, url, gptData);
   }
 
   async restartSession(sessionId) {
     if(!(sessionId in this.sessionIdVsClientInstance)) return;
-    logger.warn(`⚠️ -- Reiniciando la sesión ${sessionId}`);
+    console.warn(`⚠️ -- Reiniciando la sesión ${sessionId}`);
     const instance = this.sessionIdVsClientInstance[sessionId];
     try {
       await instance.client.destroy();
     } catch (error) {
-      logger.error(error);
+      console.error(error);
     }
     this.sessionIdVsClientInstance[sessionId] = new WhatsAppClientSession(
       sessionId, instance.sheetUrl, {apiKey: instance.apiKey, training: instance.training});
@@ -37,7 +30,7 @@ export class WhatsappSessionManager {
 
   async destroySession(sessionId, logout=false) {
     if(!(sessionId in this.sessionIdVsClientInstance)) return;
-    logger.warn(`💥 --  Destruyendo la sesión ${sessionId}`);
+    console.warn(`💥 --  Destruyendo la sesión ${sessionId}`);
     const instance = this.sessionIdVsClientInstance[sessionId];
     try {
       if(logout){
@@ -46,34 +39,23 @@ export class WhatsappSessionManager {
       }
       await instance.client.destroy();
     } catch (error) {
-      logger.error(error);
+      console.error(error);
     }
-    logger.info(`✅ -- La sesión ${sessionId} ha sido destruida`);
+    console.log(`✅ -- La sesión ${sessionId} ha sido destruida`);
   }
 
   async startSession(sessionId) {
     if(!(sessionId in this.sessionIdVsClientInstance)) return;
-    logger.info(`⚠️  -- Iniciando la sesión ${sessionId}`);
+    console.log(`⚠️  -- Iniciando la sesión ${sessionId}`);
     const instance = this.sessionIdVsClientInstance[sessionId];
     const status = await instance.client.getState();
     if (status === 'CONNECTED') {
-      logger.info(`📣  -- La sesión ${sessionId} ya ESTÁ INICIADA`);
+      console.log(`📣  -- La sesión ${sessionId} ya ESTÁ INICIADA`);
       return;
     }
-    logger.info(`🔍  -- Estado de la sesión ${sessionId}: ${status}`);
+    console.log(`🔍  -- Estado de la sesión ${sessionId}: ${status}`);
     await instance.client.initialize();
-    logger.info(`✅ -- La sesión ${sessionId} ha sido iniciada`);
-  }
-
-  async getALLSessionsIDs() {
-    const directoryNames = await getDirectories(
-      "../.wwebjs_auth"
-    );
-    return directoryNames.map(name => name.split("-")[1]);
-  }
-
-  getClientFromSessionId (sessionId) {
-    return this.sessionIdVsClientInstance[sessionId].getClient();
+    console.log(`✅ -- La sesión ${sessionId} ha sido iniciada`);
   }
 }
 
@@ -100,12 +82,12 @@ class WhatsAppClientSession {
       })
     });
     this.client.on('qr', (qr) => {
-      logger.info(`💤 -- Esperando el escaneo del QR de ${this.sessionId} --`);
+      console.log(`💤 -- Esperando el escaneo del QR de ${this.sessionId} --`);
       // console.log(`https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=${encodeURIComponent(qr)}`);
       sendDataToSheet(this.sheetUrl, 'set_qr', {qr: qr});
     });
     this.client.on('ready', () => {
-      logger.info(`✅ -- El cliente n° ${this.sessionId} está listo`);
+      console.log(`✅ -- El cliente n° ${this.sessionId} está listo`);
       sendDataToSheet(this.sheetUrl, 'session_ready', {});
     });
     this.client.on('message', async msg => {
@@ -124,10 +106,10 @@ class WhatsAppClientSession {
         user_num: msg.from, msg: msg.body, response: response.content, date: msg.timestamp});
       } catch (error) {
         if (error.response) {
-          logger.error(error.response.status);
-          logger.error(error.response.data);
+          console.error(error.response.status);
+          console.error(error.response.data);
         } else {
-          logger.error(error.message);
+          console.error(error.message);
         }
       }
     });
@@ -185,5 +167,5 @@ class WhatsAppClientSession {
 const sendDataToSheet = async (url, op, data) => {
   const response = await fetch(url, {method: 'POST', body: JSON.stringify({op, data})});
   const txt_response = await response.text();
-  logger.info(`🔍 -- La operacion ${op} ha retornado: ${txt_response}`);
+  console.log(`🔍 -- La operacion ${op} ha retornado: ${txt_response}`);
 }

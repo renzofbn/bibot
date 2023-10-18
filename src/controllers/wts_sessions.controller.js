@@ -1,5 +1,4 @@
-import { ADMIN_PASS } from '../config.js';
-import { logger, wtsSessionManager } from '../index.js';
+import { wtsSessionManager } from '../index.js';
 
 const doClientOperations = (op, sheetId, sheetUrl, gptData) => {
   switch (op) {
@@ -30,7 +29,7 @@ export const createSession = (req, res) => {
     res.send(req.body);
 
   }catch (err) {
-    logger.error(err.message);
+    console.error(err.message);
     return res.status(500).json({
       message: 'Something went wrong...'
     });
@@ -39,14 +38,10 @@ export const createSession = (req, res) => {
 
 export const statusSession = (req, res) => {
   try {
-    const { pass } = req.body;
-    if (pass === ADMIN_PASS) {
-      const activeSessions = 0;
-      res.send({activeSessions});
-    }
+    console.log("Not implemented yet");
   }
   catch (err) {
-    logger.error(err.message);
+    console.error(err.message);
     return res.status(500).json({
       message: 'Something went wrong...'
     });
